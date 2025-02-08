@@ -176,7 +176,7 @@ if __name__ == "__main__":
         uvicorn.run(
             app,
             host="0.0.0.0",
-            port=8443,  # Standard HTTPS port
+            port=8000,  # Standard HTTPS port
             ssl_keyfile=ssl_keyfile,
             ssl_certfile=ssl_certfile
         ) 

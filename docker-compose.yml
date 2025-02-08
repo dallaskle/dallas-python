@@ -8,10 +8,11 @@ services:
     volumes:
       - ./app:/app
       - ./logs:/app/logs
+      - ./certs:/certs
     environment:
       - PYTHONUNBUFFERED=1
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    command: uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload
+    command: python -m api_server
     networks:
       - app_network
 

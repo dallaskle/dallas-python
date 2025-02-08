@@ -159,24 +159,38 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     
-    # Get the absolute path to the certificate files
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    cert_dir = os.path.join(base_dir, "certs")
-    ssl_certfile = os.path.join(cert_dir, "cert.pem")
-    ssl_keyfile = os.path.join(cert_dir, "key.pem")
+    # Check both Docker and local development paths for certificates
+    cert_paths = [
+        "/certs",  # Docker volume mount path
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "certs")  # Local development path
+    ]
     
-    print(f"Looking for certificates in: {cert_dir}")
+    # Try to find certificates in any of the possible locations
+    ssl_certfile = None
+    ssl_keyfile = None
+    cert_dir = None
+    
+    for path in cert_paths:
+        potential_cert = os.path.join(path, "cert.pem")
+        potential_key = os.path.join(path, "key.pem")
+        if os.path.exists(potential_cert) and os.path.exists(potential_key):
+            ssl_certfile = potential_cert
+            ssl_keyfile = potential_key
+            cert_dir = path
+            break
+    
+    print(f"Checking for certificates in: {', '.join(cert_paths)}")
     
     # Verify certificate files exist
-    if not (os.path.exists(ssl_certfile) and os.path.exists(ssl_keyfile)):
-        print(f"Warning: SSL certificate files not found at {cert_dir}. Running in HTTP mode.")
+    if not cert_dir:
+        print(f"Warning: SSL certificate files not found in any of: {', '.join(cert_paths)}. Running in HTTP mode.")
         uvicorn.run(app, host="0.0.0.0", port=8000)
     else:
         print(f"Starting server with HTTPS support using certificates from {cert_dir}")
         uvicorn.run(
             app,
             host="0.0.0.0",
-            port=8000,  # Standard HTTPS port
+            port=8000,  # Using port 8000 for both HTTP and HTTPS
             ssl_keyfile=ssl_keyfile,
             ssl_certfile=ssl_certfile
         ) 

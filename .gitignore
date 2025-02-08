@@ -9,3 +9,5 @@ __pycache__/
 # Logs
 logs/
 *.log 
+
+app/__pycache__/

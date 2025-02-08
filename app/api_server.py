@@ -160,16 +160,19 @@ if __name__ == "__main__":
     import uvicorn
     
     # Get the absolute path to the certificate files
-    cert_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "certs")
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    cert_dir = os.path.join(base_dir, "certs")
     ssl_certfile = os.path.join(cert_dir, "cert.pem")
     ssl_keyfile = os.path.join(cert_dir, "key.pem")
     
+    print(f"Looking for certificates in: {cert_dir}")
+    
     # Verify certificate files exist
     if not (os.path.exists(ssl_certfile) and os.path.exists(ssl_keyfile)):
-        print("Warning: SSL certificate files not found. Running in HTTP mode.")
+        print(f"Warning: SSL certificate files not found at {cert_dir}. Running in HTTP mode.")
         uvicorn.run(app, host="0.0.0.0", port=8000)
     else:
-        print("Starting server with HTTPS support...")
+        print(f"Starting server with HTTPS support using certificates from {cert_dir}")
         uvicorn.run(
             app,
             host="0.0.0.0",

@@ -29,7 +29,13 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=[
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "http://localhost:8000",
+        "https://localhost:8443",
+        "https://gauntlet-daily-challenge-phi.vercel.app"
+    ],  # Frontend URLs
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
@@ -152,4 +158,22 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    
+    # Get the absolute path to the certificate files
+    cert_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "certs")
+    ssl_certfile = os.path.join(cert_dir, "cert.pem")
+    ssl_keyfile = os.path.join(cert_dir, "key.pem")
+    
+    # Verify certificate files exist
+    if not (os.path.exists(ssl_certfile) and os.path.exists(ssl_keyfile)):
+        print("Warning: SSL certificate files not found. Running in HTTP mode.")
+        uvicorn.run(app, host="0.0.0.0", port=8000)
+    else:
+        print("Starting server with HTTPS support...")
+        uvicorn.run(
+            app,
+            host="0.0.0.0",
+            port=8443,  # Standard HTTPS port
+            ssl_keyfile=ssl_keyfile,
+            ssl_certfile=ssl_certfile
+        ) 
